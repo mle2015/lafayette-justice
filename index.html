@@ -163,9 +163,9 @@
     <div id="docs" class="panel" style="padding: clamp(16px,2.5vw,24px); margin-top:18px">
       <h3 class="section-title">Documents & Filings</h3>
       <ul>
-        <li>Permits & amendments (DOB): <a href="#" aria-label="Link to permits">View permits</a></li>
-        <li>Stop Work Orders (if any): <a href="#" aria-label="Link to SWO">View SWO</a></li>
-        <li>Easement & zoning lot docs (2017–2019): <a href="#" aria-label="Link to easement and zoning docs">View records</a></li>
+        <li>Permits & amendments (DOB): <a href="https://a810-dobnow.nyc.gov/publish/Index.html#!/search" aria-label="Link to permits">View permits</a></li>
+        <li>Stop Work Orders (if any): <a href="https://a810-bisweb.nyc.gov/bisweb/ECBQueryByLocationServlet?requestid=2&allbin=2130344" aria-label="Link to SWO">View SWO</a></li>
+        <li>311 Complaints from residents: <a href="https://a810-bisweb.nyc.gov/bisweb/ComplaintsByAddressServlet?requestid=2&allbin=2130344" aria-label="aria-label="Link to 311 complaints"">View complaints</a></li>
       </ul>
       <p class="helper">Note: Where appropriate, language refers to <em>alleged</em> violations or disputes currently under review, not established legal findings.</p>
     </div>
@@ -189,22 +189,29 @@
   <section id="contact" class="container">
     <div class="panel" style="padding: clamp(16px,2.5vw,24px)">
       <h3 class="section-title">Contact Us</h3>
-      <form id="contactForm" action="" method="POST" novalidate>
-        <div>
-          <label for="name">Name</label>
-          <input id="name" name="name" type="text" placeholder="Your full name" required aria-required="true" />
-        </div>
-        <div>
-          <label for="email">Email</label>
-          <input id="email" name="email" type="email" placeholder="you@example.com" required aria-required="true" />
-        </div>
-        <div>
-          <label for="message">Message</label>
-          <textarea id="message" name="message" placeholder="How would you like to help?" required aria-required="true"></textarea>
-        </div>
-        <button class="btn btn-primary" type="submit">Send</button>
-        <p class="helper">No account required. Messages route via your email client if no form endpoint is configured.</p>
-      </form>
+      <form id="contactForm" action="https://formspree.io/f/mnnbjgeo" method="POST" novalidate>
+  <div>
+    <label for="name">Name</label>
+    <input id="name" name="name" type="text" placeholder="Your full name" required aria-required="true" />
+  </div>
+  <div>
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" placeholder="your@email.com" required aria-required="true" />
+  </div>
+  <div>
+    <label for="message">Message</label>
+    <textarea id="message" name="message" placeholder="How would you like to help?" required aria-required="true"></textarea>
+  </div>
+
+  <!-- simple spam honeypot (hidden to humans) -->
+  <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off" />
+
+  <!-- optional subject line for emails you receive -->
+  <input type="hidden" name="_subject" value="Website contact form — Lafayette Justice" />
+
+  <button class="btn btn-primary" type="submit">Send</button>
+  <p id="formStatus" class="helper" role="status" aria-live="polite"></p>
+</form>
     </div>
   </section>
 
@@ -230,39 +237,35 @@
     <a class="btn btn-outline" href="https://www.change.org/p/oppose-new-buildings-at-lafayette-estates" target="_blank" rel="noopener" aria-label="Sign the petition">Petition</a>
   </aside>
 
-  <script>
-    // Current year
-    document.getElementById('year').textContent = new Date().getFullYear();
+ <script>
+  // Current year in footer
+  document.getElementById('year').textContent = new Date().getFullYear();
 
-    // Simple contact form handler:
-    // If a Formspree/Resend/etc. endpoint is configured in form.action, we'll POST to it.
-    // Otherwise, we fall back to a mailto link that opens the user's email client.
-    (function(){
-      const form = document.getElementById('contactForm');
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const data = Object.fromEntries(new FormData(form).entries());
-        const hasEndpoint = form.getAttribute('action');
-        if (hasEndpoint) {
-          try{
-            const res = await fetch(form.action, {
-              method: 'POST',
-              headers: {'Content-Type':'application/json'},
-              body: JSON.stringify(data)
-            });
-            if(!res.ok) throw new Error('Network response was not ok');
-            alert('Thanks—your message was sent.');
-            form.reset();
-          }catch(err){
-            alert('Sorry, there was an issue sending your message. Please email us directly.');
-          }
-        } else {
-          const subject = encodeURIComponent('Website contact form');
-          const body = encodeURIComponent(`Name: ${data.name}\nEmail: ${data.email}\n\n${data.message}`);
-          window.location.href = `mailto:lafayettemorrisonhdfc4@gmail.com?subject=${subject}&body=${body}`;
-        }
-      });
-    })();
-  </script>
+  (function () {
+    const form = document.getElementById('contactForm');
+    const statusEl = document.getElementById('formStatus');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusEl.textContent = 'Sending…';
+
+      const data = Object.fromEntries(new FormData(form).entries());
+
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        if (!res.ok) throw new Error('Request failed');
+        statusEl.textContent = '✅ Thanks — your message was sent.';
+        form.reset();
+      } catch (err) {
+        statusEl.textContent = '⚠️ Sorry, there was an issue sending your message. Please email us directly at info@lafayettejustice.org.';
+      }
+    });
+  })();
+</script>
 </body>
 </html>
